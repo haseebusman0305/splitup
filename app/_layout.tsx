@@ -5,6 +5,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { fonts } from '@/config/fonts';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,15 +18,13 @@ export default function RootLayout() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [fontsLoaded] = useFonts(fonts);
 
   useEffect(() => {
-    if (loaded) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [fontsLoaded]);
 
   useEffect(() => {
     const inAuthGroup = segments[0] === 'auth';
@@ -35,34 +37,44 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, segments]);
 
-  if (!loaded) {
+  if (!fontsLoaded) {
     return <Slot />;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF',
-          },
-        }}>
-        <Stack.Screen name="splash" />
-        <Stack.Screen 
-          name="auth" 
-          options={{
-            animation: 'slide_from_right',
-          }}
-        />
-        <Stack.Screen 
-          name="(tabs)"
-          options={{
-            animation: 'fade',
-          }}
-        />
-      </Stack>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-    </ThemeProvider>
+    <AuthProvider>
+      <GestureHandlerRootView style={styles.container}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: {
+                backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF',
+              },
+            }}>
+            <Stack.Screen name="splash" />
+            <Stack.Screen 
+              name="auth" 
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen 
+              name="(tabs)"
+              options={{
+                animation: 'fade',
+              }}
+            />
+          </Stack>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

@@ -1,83 +1,137 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { TextInput } from '@/components/ui/TextInput';
-import { Button } from '@/components/ui/Button';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { ScreenTransition } from '@/components/ScreenTransition';
+
+import { useState } from "react"
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native"
+import { Link } from "expo-router"
+import { StatusBar } from "expo-status-bar"
+import { ThemedView } from "@/components/ThemedView"
+import { ThemedText } from "@/components/ThemedText"
+import { TextInput } from "@/components/ui/TextInput"
+import { Button } from "@/components/ui/Button"
+import { ThemeToggle } from "@/components/ThemeToggle"
+import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "expo-router"
+
+const { width, height } = Dimensions.get("window")
 
 export default function RegisterScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { signUp } = useAuth()
+  const router = useRouter()
 
-  const handleRegister = () => {
-    // Implement your registration logic here
-    console.log('Register:', name, email, password);
-  };
+  const handleRegister = async () => {
+    try {
+      setLoading(true)
+      await signUp(email, password, name)
+      router.replace("/(tabs)")
+    } catch (error: any) {
+      console.error("Registration error:", error.message)
+      // Handle error
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <ThemedView style={styles.container}>
-      <ThemeToggle />
-      <ScreenTransition>
-        <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
-        
-        <TextInput
-          placeholder="Full Name"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
+      <StatusBar style="auto" />
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <View style={styles.content}>
+            <View style={styles.headerContainer}>
+              <ThemedText style={styles.title} bold>Create Account</ThemedText>
+            </View>
 
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-        />
-        
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
+            <TextInput placeholder="Full Name" value={name} onChangeText={setName} style={styles.input} />
 
-        <Button onPress={handleRegister} style={styles.button}>
-          Sign Up
-        </Button>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+            />
 
-        <TouchableOpacity onPress={() => router.push('/auth/login')}>
-          <ThemedText style={styles.link}>Already have an account? Login</ThemedText>
-        </TouchableOpacity>
-      </ScreenTransition>
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+
+            <Button onPress={handleRegister} style={styles.button} disabled={loading}>
+              {loading ? "Creating account..." : "Sign Up"}
+            </Button>
+
+            <Link href="/auth/login" asChild>
+              <TouchableOpacity>
+                <ThemedText style={styles.link}>Already have an account? Login</ThemedText>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <ThemeToggle style={styles.themeToggle} />
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingVertical: 60,
+  },
+  content: {
+    width: Math.min(width * 0.9, 400),
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  headerContainer: {
+    width: "100%",
+    marginBottom: 30,
   },
   title: {
-    textAlign: 'center',
-    marginBottom: 40,
+    fontSize: 28,
+    textAlign: "center",
   },
   input: {
     marginBottom: 16,
+    width: "100%",
   },
   button: {
-    marginVertical: 8,
+    marginTop: 8,
+    height: 50,
+    width: "100%",
   },
   link: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
   },
-});
+  themeToggle: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+  },
+})
+

@@ -14,9 +14,11 @@ interface ButtonProps {
   onPress: () => void;
   variant?: 'solid' | 'outline';
   style?: ViewStyle;
+  textStyle?: TextStyle;
+  disabled?: boolean;
 }
 
-export function Button({ children, onPress, variant = 'solid', style }: ButtonProps) {
+export function Button({ children, onPress, variant = 'solid', style, textStyle, disabled }: ButtonProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const scale = useSharedValue(1);
@@ -41,23 +43,30 @@ export function Button({ children, onPress, variant = 'solid', style }: ButtonPr
         ? (isDark ? Colors.dark.primary : Colors.light.primary)
         : 'transparent',
       borderColor: isDark ? Colors.dark.primary : Colors.light.primary,
+      ...(!variant || variant === 'solid' ? styles.shadowProps : {}),
     },
     style,
   ];
 
-  const textStyle: TextStyle = {
+  const defaultTextStyle: TextStyle = {
     color: variant === 'solid'
       ? '#FFFFFF'
-      : (isDark ? Colors.dark.primary : Colors.light.primary),
+      : (isDark ? '#FFFFFF' : Colors.light.primary),
   };
 
   return (
     <AnimatedPressable
-      style={[buttonStyle, animatedStyle]}
+      style={[
+        buttonStyle, 
+        animatedStyle,
+        disabled && styles.disabled
+      ]}
       onPress={onPress}
       onPressIn={handlePressIn}
-      onPressOut={handlePressOut}>
-      <Text style={[styles.text, textStyle]}>{children}</Text>
+      onPressOut={handlePressOut}
+      disabled={disabled}
+    >
+      <Text style={[styles.text, defaultTextStyle, textStyle]}>{children}</Text>
     </AnimatedPressable>
   );
 }
@@ -68,6 +77,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  shadowProps: {
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -79,10 +90,15 @@ const styles = StyleSheet.create({
   },
   outlineButton: {
     borderWidth: 2,
+    backgroundColor: 'transparent',
   },
   text: {
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.5,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

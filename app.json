@@ -5,22 +5,50 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "com.splitupandroid.app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.splitupandroid.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.splitupandroid.app",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.splitupandroid.app",
+              "host": "oauth2redirect"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "config": {
+        "firebase": {
+          "apiKey": "@env:FIREBASE_API_KEY",
+          "authDomain": "@env:FIREBASE_AUTH_DOMAIN",
+          "projectId": "@env:FIREBASE_PROJECT_ID",
+          "storageBucket": "@env:FIREBASE_STORAGE_BUCKET",
+          "messagingSenderId": "@env:FIREBASE_MESSAGING_SENDER_ID",
+          "appId": "@env:FIREBASE_APP_ID"
+        }
+      }
     },
     "plugins": [
       "expo-router",
@@ -36,6 +64,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b9c09abf-e94f-4da2-9d1a-0143e2be60f8"
+      }
     }
   }
 }

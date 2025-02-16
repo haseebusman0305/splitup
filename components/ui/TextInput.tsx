@@ -24,10 +24,11 @@ export function TextInput(props: TextInputProps) {
 
 const styles = StyleSheet.create({
   input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 8,
+    height: 50,
+    borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    borderWidth: 1,
   },
 });

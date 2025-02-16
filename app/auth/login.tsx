@@ -1,101 +1,160 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { TextInput } from '@/components/ui/TextInput';
-import { Button } from '@/components/ui/Button';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { ScreenTransition } from '@/components/ScreenTransition';
+import { useState } from "react"
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Alert,
+} from "react-native"
+import { Link } from "expo-router"
+import { StatusBar } from "expo-status-bar"
+import { ThemedView } from "@/components/ThemedView"
+import { ThemedText } from "@/components/ThemedText"
+import { TextInput } from "@/components/ui/TextInput"
+import { Button } from "@/components/ui/Button"
+import { ThemeToggle } from "@/components/ThemeToggle"
+import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "expo-router"
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window")
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { signIn, googleSignIn, handleGoogleResponse } = useAuth()
+  const router = useRouter()
 
-  const handleLogin = () => {
-    // Implement your login logic here
-    console.log('Login:', email, password);
-  };
+  const handleLogin = async () => {
+    try {
+      setLoading(true)
+      await signIn(email, password)
+      router.replace("/(tabs)")
+    } catch (error: any) {
+      console.error("Login error:", error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const handleGoogleLogin = () => {
-    // Implement Google login logic
-    console.log('Google login');
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const response = await googleSignIn();
+      if (response) {
+        router.replace('/(tabs)');
+      }
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      Alert.alert(
+        "Sign In Error",
+        "Unable to sign in with Google. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemeToggle />
-      <ScreenTransition>
-        <Animated.View 
-          entering={FadeIn.duration(800)}
-          style={styles.content}>
-          <ThemedText type="title" style={styles.title}>Welcome Back</ThemedText>
-          
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-          />
-          
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={styles.input}
-          />
+      <StatusBar style="auto" />
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <View style={styles.content}>
+            <View style={styles.headerContainer}>
+              <ThemedText style={styles.title} bold>Welcome Back</ThemedText>
+            </View>
 
-          <Button onPress={handleLogin} style={styles.button}>
-            Sign In
-          </Button>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+            />
 
-          <Button 
-            onPress={handleGoogleLogin} 
-            variant="outline"
-            style={styles.button}>
-            Continue with Google
-          </Button>
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
 
-          <TouchableOpacity onPress={() => router.push('/auth/register')}>
-            <ThemedText style={styles.link}>Don't have an account? Register</ThemedText>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScreenTransition>
+            <Button onPress={handleLogin} style={styles.button} disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+
+            <Button 
+              onPress={handleGoogleLogin} 
+              variant="outline" 
+              style={styles.button}
+              disabled={loading}
+            >
+              Continue with Google
+            </Button>
+
+            <Link href="/auth/register" asChild>
+              <TouchableOpacity>
+                <ThemedText style={styles.link}>Don't have an account? Register</ThemedText>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <ThemeToggle style={styles.themeToggle} />
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingVertical: 60,
   },
   content: {
     width: Math.min(width * 0.9, 400),
-    gap: 16,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  headerContainer: {
+    width: "100%",
+    marginBottom: 30,
   },
   title: {
-    fontSize: 32,
-    textAlign: 'center',
-    marginBottom: 32,
+    fontSize: 28,
+    textAlign: "center",
   },
   input: {
-    marginBottom: 8,
+    marginBottom: 16,
+    width: "100%",
   },
   button: {
-    marginVertical: 8,
-    height: 56,
+    marginTop: 8,
+    height: 50,
+    width: "100%",
   },
   link: {
-    textAlign: 'center',
-    marginTop: 16,
+    textAlign: "center",
+    marginTop: 20,
   },
-});
+  themeToggle: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+  },
+})
+
