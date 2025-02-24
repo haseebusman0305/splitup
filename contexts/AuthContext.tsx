@@ -13,94 +13,112 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
 type User = {
-  uid: string;
-  email: string | null;
   displayName: string | null;
-} | null;
+  email: string | null;
+};
 
 type AuthContextType = {
-  user: User;
+  user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-  googleSignIn: () => Promise<User | null>;
-  handleGoogleResponse: (response: any) => Promise<User>;
+  googleSignIn: () => Promise<any>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+  googleSignIn: async () => null,
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    responseType: "code",
-    selectAccount: true,
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: "com.splitupandroid.app:/oauth2redirect"
+    androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    redirectUri: "com.splitupandroid.app:/oauth2redirect",  
   });
 
-console.log(response,"response")
   useEffect(() => {
+    console.log(response,"response")
     if (response?.type === 'success') {
+      console.log('Google Auth Response:', response);
       const { authentication } = response;
-      handleGoogleResponse(authentication);
+      handleGoogleResponse(authentication).catch(error => {
+        console.error('Failed to handle Google response:', error);
+      });
+    } else if (response?.type === 'error') {
+      console.error('Google Auth Error:', response.error);
     }
   }, [response]);
 
   const handleGoogleResponse = async (authentication: any): Promise<User> => {
     try {
-      if (authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(authentication.idToken);
-        const userCredential = await signInWithCredential(auth, credential);
-        const userData = {
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          displayName: userCredential.user.displayName,
-        };
-        setUser(userData);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
-        return userData;
-      } else {
+      if (!authentication?.idToken) {
         throw new Error('No ID token present in Google response');
       }
+
+      const credential = GoogleAuthProvider.credential(
+        authentication.idToken,
+        authentication.accessToken
+      );
+
+      const userCredential = await signInWithCredential(auth, credential);
+      const userData = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        displayName: userCredential.user.displayName,
+      };
+
+      await AsyncStorage.setItem('googleAccessToken', authentication.accessToken);
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      
+      return userData;
     } catch (error) {
       console.error('Error handling Google response:', error);
-      Alert.alert('Google Sign In Error', 'Failed to authenticate with Google. Please try again.');
       throw error;
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
-      if (user) {
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-        };
-        setUser(userData);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
-      } else {
-        setUser(null);
-        await AsyncStorage.removeItem('user');
+    const initializeAuth = async () => {
+      try {
+        await checkStoredUser();
+        const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
+          if (user) {
+            const userData = {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+            };
+            setUser(userData);
+            await AsyncStorage.setItem('user', JSON.stringify(userData));
+          } else {
+            setUser(null);
+            await AsyncStorage.removeItem('user');
+          }
+          setLoading(false);
+        });
+        return unsubscribe;
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    checkStoredUser();
-
-    return unsubscribe;
+    initializeAuth();
   }, []);
 
   const checkStoredUser = async () => {
@@ -144,29 +162,36 @@ console.log(response,"response")
 
   const googleSignIn = async () => {
     try {
-      const result = await promptAsync();
-      if (result?.type === 'success') {
-        return user; // user will be set by the useEffect above
+      const result = await promptAsync();    
+      if (result?.type !== 'success') {
+        console.log('Sign in was not successful:', result);
+        return null;
       }
-      return null;
+      const userData = await handleGoogleResponse(result.authentication);
+      return userData;
     } catch (error: any) {
       console.error("Google Sign In Error:", error);
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
       throw error;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, googleSignIn, handleGoogleResponse }}>
+    <AuthContext.Provider 
+      value={{
+        user,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        googleSignIn,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return useContext(AuthContext);
 };

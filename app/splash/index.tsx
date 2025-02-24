@@ -6,6 +6,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAuth } from '@/contexts/AuthContext'; 
+import { useEffect } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,6 +15,17 @@ export default function SplashScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/auth/login');
+      }
+    }
+  }, [user, loading]);
 
   return (
     <ThemedView style={styles.container}>

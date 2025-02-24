@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const { signIn, googleSignIn, handleGoogleResponse } = useAuth()
+  const { signIn, googleSignIn, user, signOut } = useAuth()
   const router = useRouter()
 
   const handleLogin = async () => {
@@ -49,10 +49,19 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       console.error("Google login error:", error);
-      Alert.alert(
-        "Sign In Error",
-        "Unable to sign in with Google. Please try again."
-      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await signOut();
+      router.replace('/auth/login');
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -84,25 +93,38 @@ export default function LoginScreen() {
               secureTextEntry
               style={styles.input}
             />
+    
+            {user !==null ? (
+              <Button 
+                onPress={handleLogout}
+                variant="destructive" 
+                style={[styles.button, styles.logoutButton]}
+                disabled={loading}
+              >
+                {loading ? "Logging out..." : "Log Out"}
+              </Button>
+            ) : (
+              <>
+                <Button onPress={handleLogin} style={styles.button} disabled={loading}>
+                  {loading ? "Signing in..." : "Sign In"}
+                </Button>
 
-            <Button onPress={handleLogin} style={styles.button} disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
+                <Button 
+                  onPress={handleGoogleLogin} 
+                  variant="outline" 
+                  style={styles.button}
+                  disabled={loading}
+                >
+                  Continue with Google
+                </Button>
 
-            <Button 
-              onPress={handleGoogleLogin} 
-              variant="outline" 
-              style={styles.button}
-              disabled={loading}
-            >
-              Continue with Google
-            </Button>
-
-            <Link href="/auth/register" asChild>
-              <TouchableOpacity>
-                <ThemedText style={styles.link}>Don't have an account? Register</ThemedText>
-              </TouchableOpacity>
-            </Link>
+                <Link href="/auth/register" asChild>
+                  <TouchableOpacity>
+                    <ThemedText style={styles.link}>Don't have an account? Register</ThemedText>
+                  </TouchableOpacity>
+                </Link>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -155,6 +177,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 40,
     right: 20,
+  },
+  logoutButton: {
+    marginTop: 20,
+    backgroundColor: '#dc2626', // red color for logout
   },
 })
 

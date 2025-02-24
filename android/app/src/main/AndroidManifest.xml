@@ -25,6 +25,9 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.splitupandroid.app"/>
+        <data android:scheme="com.splitupandroid.app"/>
+        <data android:scheme="exp+splitup"/>
+        <data android:scheme="splitup"/>
       </intent-filter>
       <intent-filter data-generated="true">
         <action android:name="android.intent.action.VIEW"/>
