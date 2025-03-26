@@ -1,33 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useColorScheme as _useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useColorScheme as useNativeColorScheme } from 'react-native';
+import { useLocalStorage } from './useLocalStorage';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorScheme } from '@/contexts/ThemeContext';
 
-type ColorScheme = 'light' | 'dark';
-
-let colorSchemeListeners: ((theme: ColorScheme) => void)[] = [];
-let currentColorScheme: ColorScheme | null = null;
-
+// Simple hook to get the current color scheme
 export function useColorScheme(): ColorScheme {
-  const systemColorScheme = _useColorScheme() as ColorScheme;
-  const [colorScheme, setColorScheme] = useState<ColorScheme>(
-    currentColorScheme || systemColorScheme
-  );
-
-  useEffect(() => {
-    const listener = (newTheme: ColorScheme) => {
-      setColorScheme(newTheme);
-    };
-    
-    colorSchemeListeners.push(listener);
-    
-    return () => {
-      colorSchemeListeners = colorSchemeListeners.filter(l => l !== listener);
-    };
-  }, []);
-
+  const { colorScheme } = useTheme();
   return colorScheme;
 }
 
-export function setColorScheme(newColorScheme: ColorScheme) {
-  currentColorScheme = newColorScheme;
-  colorSchemeListeners.forEach(listener => listener(newColorScheme));
+// Hook to control the color scheme
+export function useColorSchemeControl() {
+  const { setColorScheme, toggleColorScheme } = useTheme();
+  return { setColorScheme, toggleColorScheme };
 }
+
+export type { ColorScheme };

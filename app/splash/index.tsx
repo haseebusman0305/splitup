@@ -33,7 +33,7 @@ const pages = [
 ];
 
 export default function SplashScreen() {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { setHasCompletedOnboarding } = useOnboarding();
   const x = useSharedValue(0);
@@ -77,7 +77,7 @@ export default function SplashScreen() {
       await setHasCompletedOnboarding(true);
       if (user) {
         router.replace('/(tabs)');
-      }else{
+      } else {
         router.replace('/auth/login');
       }
     } else {
@@ -126,9 +126,13 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     flexDirection: 'row',
+
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: 24,
     paddingBottom: 40,
+    height: 100,
+    maxHeight: 100,
+
   },
 });

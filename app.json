@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.splitupandroid.app"
+      "bundleIdentifier": "com.splitupandroid.app",
+      "userInterfaceStyle": "automatic"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,6 +20,7 @@
       },
       "package": "com.splitupandroid.app",
       "googleServicesFile": "./google-services.json",
+      "userInterfaceStyle": "automatic",
       "intentFilters": [
         {
           "action": "VIEW",

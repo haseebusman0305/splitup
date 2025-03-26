@@ -5,13 +5,25 @@
 
 export const Colors = {
   light: {
-    primary: '#AA60C8',
-    background: '#FFFFFF',
-    text: '#000000',
+    background: '#f2f2ff',
+    text: '#333333',
+    tint: '#9747FF',
+    tabIconDefault: '#cccccc',
+    tabIconSelected: '#9747FF',
+    secondary: '#f5f5f5',
+    border: '#e0e0e0',
+    primary: '#9747FF',
+    card: '#ffffff',
   },
   dark: {
-    primary: '#2A004E',
-    background: '#121212',
+    background: '#002244', // Dark navy blue for dark mode
     text: '#FFFFFF',
+    tint: '#9747FF',
+    tabIconDefault: '#666666',
+    tabIconSelected: '#9747FF',
+    secondary: '#1a3456', // Slightly lighter navy blue
+    border: '#0a315a',
+    primary: '#9747FF', 
+    card: '#003366', // Card background for dark mode
   },
 };

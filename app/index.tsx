@@ -1,14 +1,12 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
+// Remove ThemedView import since it causes the error
 
 export default function Index() {
   const router = useRouter();
-  
-  // Show a loading indicator and redirect to splash
+
   useEffect(() => {
-    // Small delay to ensure contexts are initialized
     const timer = setTimeout(() => {
       router.replace('/splash');
     }, 100);
@@ -17,9 +15,9 @@ export default function Index() {
   }, []);
   
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <ActivityIndicator size="large" />
-    </ThemedView>
+    </View>
   );
 }
 
@@ -28,5 +26,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FAF9F6', // Default light background color
   },
 });

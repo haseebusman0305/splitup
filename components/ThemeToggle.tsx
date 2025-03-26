@@ -1,32 +1,36 @@
-import { StyleSheet, ViewStyle } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { ThemedText } from './ThemedText';
+import React from 'react';
+import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme, useColorSchemeControl } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
-interface ThemeToggleProps {
+type ThemeToggleProps = {
   style?: ViewStyle;
-}
+};
 
 export function ThemeToggle({ style }: ThemeToggleProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const toggleTheme = () => {
-    // Your theme toggle logic
-  };
+  const { toggleColorScheme } = useColorSchemeControl();
 
   return (
-    <TouchableOpacity 
-      onPress={toggleTheme}
+    <TouchableOpacity
+      onPress={toggleColorScheme}
       style={[styles.container, style]}
+      activeOpacity={0.7}
     >
-      <ThemedText>{isDark ? '☀️' : '🌙'}</ThemedText>
+      <Ionicons
+        name={colorScheme === 'dark' ? 'sunny' : 'moon'}
+        size={24}
+        color={colorScheme === 'dark' ? Colors.dark.text : Colors.light.text}
+      />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.05)', // subtle background
   },
 });

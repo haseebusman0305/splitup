@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <ThemeToggle style={styles.themeToggle} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <ThemedText type="title">Welcome, {user?.displayName || 'User'}!</ThemedText>
@@ -94,5 +96,11 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     marginTop: 8,
+  },
+  themeToggle: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
   },
 });
