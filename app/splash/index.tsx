@@ -1,60 +1,118 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Dimensions, Image, Pressable } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext'; 
+import { StyleSheet, ImageURISource, SafeAreaView, ViewToken } from 'react-native';
+import Animated, {
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
+import { ThemedView } from '@/components/ThemedView';
+import ListItem from '@/components/onboarding/ListItem';
+import PaginationElement from '@/components/onboarding/PaginationElement';
+import OnboardingButton from '@/components/onboarding/OnboardingButton';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
-const { width, height } = Dimensions.get('window');
+const pages = [
+  {
+    text: 'Track Your Bills',
+    description: 'Easily manage and split expenses with your friends',
+    image: require('@/assets/images/bill.png'),
+  },
+  {
+    text: 'Save Time & Money',
+    description: 'Split expenses fairly and settle up with ease',
+    image: require('@/assets/images/saving.png'),
+  },
+  {
+    text: 'Start Tracking Today',
+    description: 'Join thousands of users managing their shared expenses',
+    image: require('@/assets/images/bill.png')
+  },
+];
 
 export default function SplashScreen() {
+  const {user} = useAuth();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const { user, loading } = useAuth();
+  const { setHasCompletedOnboarding } = useOnboarding();
+  const x = useSharedValue(0);
+  const flatListIndex = useSharedValue(0);
+  const flatListRef = useAnimatedRef<
+    Animated.FlatList<{
+      text: string;
+      description: string;
+      image: ImageURISource;
+    }>
+  >();
 
-  useEffect(() => {
-    if (!loading) {
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      flatListIndex.value = viewableItems[0]?.index ?? 0;
+    },
+    []
+  );
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      x.value = event.contentOffset.x;
+    },
+  });
+
+  const renderItem = useCallback(
+    ({
+      item,
+      index,
+    }: {
+      item: { text: string; description: string; image: ImageURISource };
+      index: number;
+    }) => {
+      return <ListItem item={item} index={index} x={x} />;
+    },
+    [x]
+  );
+
+  const handleGetStarted = useCallback(async () => {
+    if (flatListIndex.value === pages.length - 1) {
+      await setHasCompletedOnboarding(true);
       if (user) {
         router.replace('/(tabs)');
-      } else {
+      }else{
         router.replace('/auth/login');
       }
+    } else {
+      flatListRef?.current?.scrollToIndex({
+        index: flatListIndex.value + 1,
+      });
     }
-  }, [user, loading]);
+  }, [flatListIndex.value, setHasCompletedOnboarding]);
 
   return (
     <ThemedView style={styles.container}>
-      <Animated.View 
-        entering={FadeIn.duration(1000)}
-        style={styles.content}>
-        <Image 
-          source={require('@/assets/images/bill.png')}
-          style={styles.image}
-          resizeMode="contain"
+      <SafeAreaView style={styles.safeArea}>
+        <Animated.FlatList
+          ref={flatListRef}
+          onScroll={scrollHandler}
+          horizontal
+          scrollEventThrottle={16}
+          pagingEnabled={true}
+          data={pages}
+          keyExtractor={(_, index) => index.toString()}
+          bounces={false}
+          renderItem={renderItem}
+          showsHorizontalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
         />
-        <ThemedText type="title" style={styles.title}>
-          Track Your Bills
-        </ThemedText>
-        <ThemedText style={styles.description}>
-          Easily manage and split expenses with your friends
-        </ThemedText>
-      </Animated.View>
-
-      <Pressable 
-        style={styles.nextButton} 
-        onPress={() => router.push('/splash/features')}>
-        <ThemedText style={styles.nextText}>Next</ThemedText>
-        <MaterialIcons 
-          name="arrow-forward-ios" 
-          size={24} 
-          color={isDark ? Colors.dark.primary : Colors.light.primary} 
-        />
-      </Pressable>
+        <ThemedView style={styles.bottomContainer}>
+          <PaginationElement length={pages.length} x={x} />
+          <OnboardingButton
+            currentIndex={flatListIndex}
+            length={pages.length}
+            flatListRef={flatListRef}
+            onPress={handleGetStarted}
+          />
+        </ThemedView>
+      </SafeAreaView>
     </ThemedView>
   );
 }
@@ -62,39 +120,15 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 24,
   },
-  content: {
+  safeArea: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 24,
   },
-  image: {
-    width: width * 0.8,
-    height: height * 0.3,
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    textAlign: 'center',
-  },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    opacity: 0.7,
-    maxWidth: width * 0.8,
-  },
-  nextButton: {
+  bottomContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
-    padding: 16,
-  },
-  nextText: {
-    fontSize: 18,
-    fontWeight: '600',
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
 });

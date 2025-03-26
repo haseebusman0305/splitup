@@ -6,14 +6,18 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { fonts } from '@/config/fonts';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { OnboardingProvider, useOnboarding } from '@/contexts/OnboardingContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
+import 'react-native-reanimated';
 
 SplashScreen.preventAutoHideAsync();
 
-function RootLayoutNav() {
+function InitialLayout() {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const colorScheme = useColorScheme();
+  const segments = useSegments();
   
   return (
     <Stack
@@ -23,7 +27,7 @@ function RootLayoutNav() {
           backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF',
         },
       }}>
-      <Stack.Screen name="splash" />
+      <Stack.Screen name="splash"/>
       <Stack.Screen 
         name="auth" 
         options={{
@@ -56,12 +60,14 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <GestureHandlerRootView style={styles.container}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootLayoutNav />
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        </ThemeProvider>
-      </GestureHandlerRootView>
+      <OnboardingProvider>
+        <GestureHandlerRootView style={styles.container}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <InitialLayout />
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          </ThemeProvider>
+        </GestureHandlerRootView>
+      </OnboardingProvider>
     </AuthProvider>
   );
 }

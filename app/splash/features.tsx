@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,6 +33,12 @@ export default function FeaturesScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { setHasCompletedOnboarding } = useOnboarding();
+
+  const handleGetStarted = async () => {
+    await setHasCompletedOnboarding(true);
+    router.push('/auth/login');
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -53,7 +60,7 @@ export default function FeaturesScreen() {
 
       <Pressable 
         style={styles.nextButton} 
-        onPress={() => router.push('/auth/login')}>
+        onPress={handleGetStarted}>
         <ThemedText style={styles.nextText}>Get Started</ThemedText>
         <MaterialIcons 
           name="arrow-forward-ios" 

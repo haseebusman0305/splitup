@@ -19,7 +19,7 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "expo-router"
 
-const { width, height } = Dimensions.get("window")
+const { width } = Dimensions.get("window")
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")

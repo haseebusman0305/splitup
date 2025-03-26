@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
-    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     redirectUri: "com.splitupandroid.app:/oauth2redirect",  
   });
 
