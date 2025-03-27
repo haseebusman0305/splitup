@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import {
   StyleSheet,
@@ -8,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native"
 import { Link } from "expo-router"
 import { StatusBar } from "expo-status-bar"
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "expo-router"
+import { pickImage, uploadImageToCloudinary } from "@/services/cloudinaryService"
 
 const { width, height } = Dimensions.get("window")
 
@@ -26,21 +27,39 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
   const { signUp } = useAuth()
   const router = useRouter()
 
+  const handlePickImage = async () => {
+    const imageUri = await pickImage();
+    if (imageUri) {
+      setProfileImage(imageUri);
+    }
+  };
+
   const handleRegister = async () => {
     try {
-      setLoading(true)
-      await signUp(email, password, name)
-      router.replace("/(tabs)")
+      setLoading(true);
+      
+      // Upload profile image if selected
+      let profileImageUrl;
+      if (profileImage) {
+        const uploadResult = await uploadImageToCloudinary(profileImage);
+        profileImageUrl = uploadResult?.secure_url;
+      }
+      
+      // Register user with profile image if available
+      await signUp(email, password, name, profileImageUrl);
+      
+      router.replace("/(tabs)");
     } catch (error: any) {
-      console.error("Registration error:", error.message)
-      // Handle error
+      console.error("Registration error:", error.message);
+      // Error is already handled by the AuthContext
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -51,6 +70,16 @@ export default function RegisterScreen() {
             <View style={styles.headerContainer}>
               <ThemedText style={styles.title} bold>Create Account</ThemedText>
             </View>
+
+            <TouchableOpacity style={styles.profileImageContainer} onPress={handlePickImage}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.profileImagePlaceholder}>
+                  <ThemedText>Add Photo</ThemedText>
+                </View>
+              )}
+            </TouchableOpacity>
 
             <TextInput placeholder="Full Name" value={name} onChangeText={setName} style={styles.input} />
 
@@ -132,6 +161,28 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 40,
     right: 20,
+  },
+  profileImageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+    overflow: 'hidden',
+    alignSelf: 'center',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  profileImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+    backgroundColor: '#e1e1e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
 })
 

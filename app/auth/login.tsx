@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   StyleSheet,
   TouchableOpacity,
@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Image,
 } from "react-native"
 import { Link } from "expo-router"
 import { StatusBar } from "expo-status-bar"
@@ -73,38 +74,78 @@ export default function LoginScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.content}>
-            <View style={styles.headerContainer}>
-              <ThemedText style={styles.title} bold>Welcome Back</ThemedText>
-            </View>
-
-            <TextInput
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={styles.input}
-            />
-
-            <TextInput
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-    
-            {user !==null ? (
-              <Button 
-                onPress={handleLogout}
-                variant="destructive" 
-                style={[styles.button, styles.logoutButton]}
-                disabled={loading}
-              >
-                {loading ? "Logging out..." : "Log Out"}
-              </Button>
+            {user ? (
+              <View style={styles.userInfoContainer}>
+                {user.profilePicture ? (
+                  <Image 
+                    source={{ uri: user.profilePicture }} 
+                    style={styles.profileImage} 
+                  />
+                ) : (
+                  <View style={[styles.profileImage, styles.profilePlaceholder]}>
+                    <ThemedText style={styles.profilePlaceholderText}>
+                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                    </ThemedText>
+                  </View>
+                )}
+                <ThemedText style={styles.userName} bold>
+                  {user.displayName || 'User'}
+                </ThemedText>
+                <ThemedText style={styles.userEmail}>
+                  {user.email}
+                </ThemedText>
+                
+                {user.firestoreData && (
+                  <View style={styles.firestoreDataContainer}>
+                    <ThemedText style={styles.firestoreDataTitle} bold>
+                      Account Information
+                    </ThemedText>
+                    <ThemedText style={styles.firestoreDataText}>
+                      Groups: {user.firestoreData.groups?.length || 0}
+                    </ThemedText>
+                    {/* Additional Firestore data can be displayed here */}
+                  </View>
+                )}
+                
+                <Button 
+                  onPress={handleLogout}
+                  variant="destructive" 
+                  style={[styles.button, styles.logoutButton]}
+                  disabled={loading}
+                >
+                  {loading ? "Logging out..." : "Log Out"}
+                </Button>
+                
+                <Button 
+                  onPress={() => router.replace('/(tabs)')}
+                  style={[styles.button, styles.continueButton]}
+                >
+                  Continue to App
+                </Button>
+              </View>
             ) : (
               <>
+                <View style={styles.headerContainer}>
+                  <ThemedText style={styles.title} bold>Welcome Back</ThemedText>
+                </View>
+
+                <TextInput
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                />
+
+                <TextInput
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  style={styles.input}
+                />
+              
                 <Button onPress={handleLogin} style={styles.button} disabled={loading}>
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
@@ -181,6 +222,53 @@ const styles = StyleSheet.create({
   logoutButton: {
     marginTop: 20,
     backgroundColor: '#dc2626', // red color for logout
+  },
+  continueButton: {
+    marginTop: 12,
+  },
+  userInfoContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 16,
+  },
+  profilePlaceholder: {
+    backgroundColor: '#e5e7eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profilePlaceholderText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  userName: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 16,
+    marginBottom: 20,
+    color: '#6b7280',
+  },
+  firestoreDataContainer: {
+    width: '100%',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
+  },
+  firestoreDataTitle: {
+    fontSize: 18,
+    marginBottom: 8,
+  },
+  firestoreDataText: {
+    fontSize: 14,
+    marginBottom: 4,
   },
 })
 

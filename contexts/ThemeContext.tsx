@@ -18,7 +18,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const deviceColorScheme = useDeviceColorScheme() as ColorScheme || 'light';
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>(deviceColorScheme);
 
-  // Load saved theme preference on initial render
   useEffect(() => {
     async function loadThemePreference() {
       try {
@@ -36,15 +35,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     loadThemePreference();
   }, []);
 
-  // Save theme preference whenever it changes
   const setColorScheme = async (scheme: ColorScheme | null) => {
     try {
       if (scheme === null) {
-        // Reset to device preference
         await AsyncStorage.removeItem(THEME_PREFERENCE_KEY);
         setColorSchemeState(deviceColorScheme);
       } else {
-        // Set to user preference
         await AsyncStorage.setItem(THEME_PREFERENCE_KEY, scheme);
         setColorSchemeState(scheme);
       }
