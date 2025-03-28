@@ -4,7 +4,6 @@ import Animated, {
   withSpring,
   useSharedValue
 } from 'react-native-reanimated';
-import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -12,15 +11,21 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 interface ButtonProps {
   children: string;
   onPress: () => void;
-  variant?: 'solid' | 'outline';
+  variant?: 'solid' | 'outline' | 'ghost' | 'destructive';
   style?: ViewStyle;
   textStyle?: TextStyle;
   disabled?: boolean;
 }
 
-export function Button({ children, onPress, variant = 'solid', style, textStyle, disabled }: ButtonProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+export function Button({ 
+  children, 
+  onPress, 
+  variant = 'solid', 
+  style, 
+  textStyle, 
+  disabled 
+}: ButtonProps) {
+  const themeColors = useColorScheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -35,38 +40,54 @@ export function Button({ children, onPress, variant = 'solid', style, textStyle,
     scale.value = withSpring(1);
   };
 
-  const buttonStyle = [
-    styles.button,
-    variant === 'outline' && styles.outlineButton,
-    {
-      backgroundColor: variant === 'solid' 
-        ? (isDark ? Colors.dark.primary : Colors.light.primary)
-        : 'transparent',
-      borderColor: isDark ? Colors.dark.primary : Colors.light.primary,
-      ...(!variant || variant === 'solid' ? styles.shadowProps : {}),
-    },
-    style,
-  ];
+  // Determine button background color
+  let backgroundColor = 'transparent';
+  let borderColor = themeColors.primary;
+  let textColor = '#FFFFFF';
 
-  const defaultTextStyle: TextStyle = {
-    color: variant === 'solid'
-      ? '#FFFFFF'
-      : (isDark ? '#FFFFFF' : Colors.light.primary),
-  };
+  switch (variant) {
+    case 'solid':
+      backgroundColor = themeColors.primary;
+      textColor = '#FFFFFF';
+      break;
+    case 'outline':
+      backgroundColor = 'transparent';
+      textColor = themeColors.primary;
+      break;
+    case 'ghost':
+      backgroundColor = themeColors.secondary + '33'; // With opacity
+      borderColor = 'transparent';
+      textColor = themeColors.text;
+      break;
+    case 'destructive':
+      backgroundColor = '#dc2626'; // Red color for destructive actions
+      borderColor = '#dc2626';
+      textColor = '#FFFFFF';
+      break;
+  }
 
   return (
     <AnimatedPressable
       style={[
-        buttonStyle, 
+        styles.button, 
+        {
+          backgroundColor,
+          borderColor: variant === 'outline' ? borderColor : 'transparent',
+          borderWidth: variant === 'outline' ? 2 : 0,
+        },
+        variant === 'solid' && styles.shadowProps,
         animatedStyle,
-        disabled && styles.disabled
+        disabled && styles.disabled,
+        style,
       ]}
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled}
     >
-      <Text style={[styles.text, defaultTextStyle, textStyle]}>{children}</Text>
+      <Text style={[styles.text, { color: textColor }, textStyle]}>
+        {children}
+      </Text>
     </AnimatedPressable>
   );
 }
@@ -77,6 +98,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
   shadowProps: {
     shadowColor: "#000",
@@ -87,10 +109,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  outlineButton: {
-    borderWidth: 2,
-    backgroundColor: 'transparent',
   },
   text: {
     fontSize: 16,

@@ -39,3 +39,7 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+ios/
+android/
+GoogleService-Info.plist

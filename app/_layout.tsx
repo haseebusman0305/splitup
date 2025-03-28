@@ -16,14 +16,14 @@ import 'react-native-reanimated';
 SplashScreen.preventAutoHideAsync();
 
 function InitialLayout() {
-  const colorScheme = useColorScheme();
+  const themeColors = useColorScheme();
   
   return (
     <Stack
       screenOptions={{
         headerShown: false,
         contentStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#002244' : '#FAF9F6',
+          backgroundColor: themeColors.background,
         },
       }}>
       <Stack.Screen name="splash"/>
@@ -71,10 +71,21 @@ export default function RootLayout() {
 }
 
 function AppWithNavigation() {
-  const colorScheme = useColorScheme();
+  const themeColors = useColorScheme();
+  const customTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: themeColors.background,
+      text: themeColors.text,
+      primary: themeColors.primary,
+      card: themeColors.card,
+      border: themeColors.border,
+    },
+  };
   
   return (
-    <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={customTheme}>
       <InitialLayout />
     </NavigationThemeProvider>
   );

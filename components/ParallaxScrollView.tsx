@@ -16,8 +16,7 @@ export default function ParallaxScrollView({
   headerImage,
   headerBackgroundColor,
 }: Props) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const themeColors = useColorScheme();
 
   return (
     <View style={styles.container}>
@@ -26,9 +25,7 @@ export default function ParallaxScrollView({
           style={[
             styles.header,
             {
-              backgroundColor: isDark 
-                ? headerBackgroundColor?.dark 
-                : headerBackgroundColor?.light
+              backgroundColor: headerBackgroundColor?.light || themeColors.background
             }
           ]}>
           {headerImage}

@@ -3,9 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, Pressable, LayoutChangeEvent } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
 
 type TabBarIconProps = {
   name: keyof typeof FontAwesome.glyphMap;
@@ -20,8 +18,7 @@ const TAB_BAR_WIDTH = width - 40;
 const INITIAL_TAB_POSITIONS: { [key: string]: number } = {};
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const themeColors = useColorScheme();
   const insets = useSafeAreaInsets();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const tabPositions = useRef<{ [key: string]: number }>(INITIAL_TAB_POSITIONS).current;
@@ -45,14 +42,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: isDark ? Colors.dark.primary : Colors.light.primary,
+        tabBarActiveTintColor: themeColors.primary,
         tabBarStyle: {
           position: 'absolute',
           bottom: 25 + insets.bottom,
           left: 20,
           right: 20,
           elevation: 0,
-          backgroundColor: isDark ? Colors.dark.background : Colors.light.background,
+          backgroundColor: themeColors.card,
           borderRadius: 30,
           height: 60,
           shadowColor: '#000',
@@ -67,11 +64,11 @@ export default function TabLayout() {
         },
         tabBarShowLabel: false,
         headerStyle: {
-          backgroundColor: isDark ? Colors.dark.background : Colors.light.background,
+          backgroundColor: themeColors.background,
         },
-        headerTintColor: isDark ? Colors.dark.text : Colors.light.text,
+        headerTintColor: themeColors.text,
       }}
-      tabBar={(props) => <CustomTabBar {...props} slideAnim={slideAnim} measureTab={measureTab} setActiveTabIndex={setActiveTabIndex} colorScheme={colorScheme} />}
+      tabBar={(props) => <CustomTabBar {...props} slideAnim={slideAnim} measureTab={measureTab} setActiveTabIndex={setActiveTabIndex} themeColors={themeColors} />}
     >
       <Tabs.Screen
         name="index"
@@ -80,7 +77,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon 
               name="home" 
-              color={focused ? '#FFFFFF' : (isDark ? Colors.dark.primary : Colors.light.primary)} 
+              color={focused ? '#FFFFFF' : themeColors.primary} 
               focused={focused} 
               label="Home" 
               index={0} 
@@ -95,7 +92,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon 
               name="compass" 
-              color={focused ? '#FFFFFF' : (isDark ? Colors.dark.primary : Colors.light.primary)} 
+              color={focused ? '#FFFFFF' : themeColors.primary} 
               focused={focused} 
               label="Explore" 
               index={1} 
@@ -110,7 +107,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon 
               name="user" 
-              color={focused ? '#FFFFFF' : (isDark ? Colors.dark.primary : Colors.light.primary)} 
+              color={focused ? '#FFFFFF' : themeColors.primary} 
               focused={focused} 
               label="Profile" 
               index={2} 
@@ -122,13 +119,11 @@ export default function TabLayout() {
   );
 }
 
-function CustomTabBar({ state, descriptors, navigation, slideAnim, measureTab, setActiveTabIndex, colorScheme }: any) {
-  const isDark = colorScheme === 'dark';
-
+function CustomTabBar({ state, descriptors, navigation, slideAnim, measureTab, setActiveTabIndex, themeColors }: any) {
   return (
     <View style={[
       styles.tabBarContainer,
-      { backgroundColor: isDark ? Colors.dark.background : Colors.light.background }
+      { backgroundColor: themeColors.card }
     ]}>
       {/* Moving background indicator */}
       <Animated.View 
@@ -136,7 +131,7 @@ function CustomTabBar({ state, descriptors, navigation, slideAnim, measureTab, s
           styles.slidingIndicator,
           {
             transform: [{ translateX: slideAnim }],
-            backgroundColor: isDark ? Colors.dark.primary : Colors.light.primary,
+            backgroundColor: themeColors.primary,
           }
         ]}
       />
@@ -181,7 +176,7 @@ function CustomTabBar({ state, descriptors, navigation, slideAnim, measureTab, s
               {options.tabBarIcon && 
                 options.tabBarIcon({
                   focused: isFocused,
-                  color: isFocused ? '#FFFFFF' : (isDark ? Colors.dark.primary : Colors.light.primary),
+                  color: isFocused ? '#FFFFFF' : themeColors.primary,
                   size: 24,
                 })}
             </Pressable>
@@ -215,7 +210,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     height: 60,
-    backgroundColor: '#FFFFFF',
     borderRadius: 30,
     flexDirection: 'row',
     shadowColor: '#000',

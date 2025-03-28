@@ -19,6 +19,8 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "expo-router"
 import { pickImage, uploadImageToCloudinary } from "@/services/cloudinaryService"
+import { useColorScheme } from "@/hooks/useColorScheme"
+import { Colors } from "@/constants/Colors"
 
 const { width, height } = Dimensions.get("window")
 
@@ -30,6 +32,8 @@ export default function RegisterScreen() {
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const { signUp } = useAuth()
   const router = useRouter()
+  const theme = useColorScheme()
+  const themeColors = Colors[theme]
 
   const handlePickImage = async () => {
     const imageUri = await pickImage();
@@ -75,7 +79,7 @@ export default function RegisterScreen() {
               {profileImage ? (
                 <Image source={{ uri: profileImage }} style={styles.profileImage} />
               ) : (
-                <View style={styles.profileImagePlaceholder}>
+                <View style={[styles.profileImagePlaceholder, { backgroundColor: themeColors.secondary + '66', borderColor: themeColors.border }]}>
                   <ThemedText>Add Photo</ThemedText>
                 </View>
               )}

@@ -5,7 +5,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
@@ -20,9 +19,8 @@ type Props = {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const OnboardingButton = ({ currentIndex, length, onPress }: Props) => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const primaryColor = isDark ? Colors.dark.primary : Colors.light.primary;
+  const themeColors = useColorScheme();
+  const primaryColor = themeColors.primary;
   
   const rnBtnStyle = useAnimatedStyle(() => {
     return {
@@ -61,7 +59,7 @@ const OnboardingButton = ({ currentIndex, length, onPress }: Props) => {
   return (
     <AnimatedPressable style={[styles.container, rnBtnStyle]} onPress={onPress}>
       <Animated.View style={[styles.textContainer, rnTextStyle]}>
-        <ThemedText style={styles.textStyle} darkColor="#FFF" lightColor="#FFF">
+        <ThemedText style={[styles.textStyle, {color: '#FFFFFF'}]}>
           Get Started
         </ThemedText>
       </Animated.View>

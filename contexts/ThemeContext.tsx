@@ -1,31 +1,30 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme as useDeviceColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export type ColorScheme = 'light' | 'dark';
+import { THEMES, DEFAULT_THEME_INDEX, THEME_NAMES } from '@/constants/Colors';
 
 interface ThemeContextType {
-  colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme | null) => void;
-  toggleColorScheme: () => void;
+  themeIndex: number;
+  setThemeIndex: (index: number) => void;
+  cycleTheme: () => void;
+  getThemeName: () => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_PREFERENCE_KEY = '@theme_preference';
+const THEME_PREFERENCE_KEY = '@theme_preference_index';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const deviceColorScheme = useDeviceColorScheme() as ColorScheme || 'light';
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(deviceColorScheme);
+  const [themeIndex, setThemeIndexState] = useState<number>(DEFAULT_THEME_INDEX);
 
   useEffect(() => {
     async function loadThemePreference() {
       try {
-        const savedTheme = await AsyncStorage.getItem(THEME_PREFERENCE_KEY);
-        if (savedTheme !== null) {
-          setColorSchemeState(savedTheme as ColorScheme);
-        } else {
-          setColorSchemeState(deviceColorScheme);
+        const savedThemeIndex = await AsyncStorage.getItem(THEME_PREFERENCE_KEY);
+        if (savedThemeIndex !== null) {
+          const index = parseInt(savedThemeIndex, 10);
+          if (!isNaN(index) && index >= 0 && index < THEMES.length) {
+            setThemeIndexState(index);
+          }
         }
       } catch (error) {
         console.log('Error loading theme preference:', error);
@@ -35,27 +34,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     loadThemePreference();
   }, []);
 
-  const setColorScheme = async (scheme: ColorScheme | null) => {
+  const setThemeIndex = async (newIndex: number) => {
     try {
-      if (scheme === null) {
-        await AsyncStorage.removeItem(THEME_PREFERENCE_KEY);
-        setColorSchemeState(deviceColorScheme);
-      } else {
-        await AsyncStorage.setItem(THEME_PREFERENCE_KEY, scheme);
-        setColorSchemeState(scheme);
+      // Ensure the index is valid
+      if (newIndex < 0 || newIndex >= THEMES.length) {
+        console.warn(`Invalid theme index: ${newIndex}. Using default.`);
+        newIndex = DEFAULT_THEME_INDEX;
       }
+      
+      await AsyncStorage.setItem(THEME_PREFERENCE_KEY, newIndex.toString());
+      setThemeIndexState(newIndex);
     } catch (error) {
       console.log('Error saving theme preference:', error);
     }
   };
 
-  const toggleColorScheme = () => {
-    const newScheme = colorScheme === 'dark' ? 'light' : 'dark';
-    setColorScheme(newScheme);
+  const cycleTheme = () => {
+    const nextIndex = (themeIndex + 1) % THEMES.length;
+    setThemeIndex(nextIndex);
+  };
+
+  const getThemeName = () => {
+    return THEME_NAMES[themeIndex] || 'Unknown Theme';
   };
 
   return (
-    <ThemeContext.Provider value={{ colorScheme, setColorScheme, toggleColorScheme }}>
+    <ThemeContext.Provider value={{ themeIndex, setThemeIndex, cycleTheme, getThemeName }}>
       {children}
     </ThemeContext.Provider>
   );

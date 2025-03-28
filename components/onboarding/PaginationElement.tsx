@@ -7,7 +7,6 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
 
 type Props = {
   length: number;
@@ -16,11 +15,10 @@ type Props = {
 
 const PaginationElement = ({ length, x }: Props) => {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const themeColors = useColorScheme();
   
-  const activeColor = isDark ? Colors.dark.primary : Colors.light.primary;
-  const inactiveColor = isDark ? '#505050' : '#D0D0D0';
+  const activeColor = themeColors.primary;
+  const inactiveColor = themeColors.secondary;
 
   const PaginationComponent = useCallback(
     ({ index }: { index: number }) => {

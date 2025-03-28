@@ -1,34 +1,40 @@
+import { StyleSheet, TextInput as RNTextInput, TextInputProps, View } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { StyleSheet, TextInput as RNTextInput, TextInputProps } from 'react-native';
 
-export function TextInput(props: TextInputProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+export function TextInput({ style, ...props }: TextInputProps) {
+  const themeColors = useColorScheme();
 
   return (
-    <RNTextInput
-      {...props}
-      style={[
-        styles.input,
-        {
-          backgroundColor: isDark ? '#2C2C2C' : '#F5F5F5',
-          color: isDark ? '#FFFFFF' : '#000000',
-          borderColor: isDark ? '#404040' : '#E0E0E0',
-        },
-        props.style,
-      ]}
-      placeholderTextColor={isDark ? '#808080' : '#A0A0A0'}
-    />
+    <View style={[
+      styles.container, 
+      { 
+        backgroundColor: themeColors.card,
+        borderColor: themeColors.border 
+      }
+    ]}>
+      <RNTextInput 
+        style={[
+          styles.input, 
+          { color: themeColors.text },
+          style
+        ]} 
+        placeholderTextColor={themeColors.textSecondary + '99'}  // Adding transparency to placeholder
+        {...props}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  input: {
-    height: 50,
+  container: {
+    borderWidth: 1,
     borderRadius: 12,
+    padding: 12,
     paddingHorizontal: 16,
+  },
+  input: {
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    borderWidth: 1,
-  },
+    height: 24,
+  }
 });

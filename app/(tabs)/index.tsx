@@ -9,6 +9,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { getUserTransactions, getUserGroups, getGroupExpenses } from '@/services/firebaseService';
 import { Transaction, Expense } from '@/services/firebaseService';
 import { FontAwesome } from '@expo/vector-icons';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +29,7 @@ export default function HomeScreen() {
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const router = useRouter();
+  const themeColors = useColorScheme();
 
   useEffect(() => {
     if (user?.uid) {
@@ -116,7 +119,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <ThemedView style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={themeColors.primary} />
         <ThemedText>Loading...</ThemedText>
       </ThemedView>
     );
@@ -134,17 +137,17 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.card}>
+          <View style={[styles.card, { borderColor: themeColors.border }]}>
             <ThemedText type="defaultSemiBold">Recent Activities</ThemedText>
             
             {loadingActivities ? (
-              <ActivityIndicator style={styles.activitiesLoader} />
+              <ActivityIndicator style={styles.activitiesLoader} color={themeColors.primary} />
             ) : activities.length > 0 ? (
               <View style={styles.activitiesContainer}>
                 {activities.map(activity => (
                   <TouchableOpacity 
                     key={`${activity.type}-${activity.id}`}
-                    style={styles.activityItem}
+                    style={[styles.activityItem, { borderBottomColor: themeColors.border + '66' }]}
                     onPress={() => navigateToActivity(activity)}
                   >
                     <View style={styles.activityInfo}>
@@ -177,7 +180,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { borderColor: themeColors.border }]}>
             <ThemedText type="defaultSemiBold">Quick Actions</ThemedText>
             <View style={styles.quickActions}>
               <Button 
@@ -186,8 +189,19 @@ export default function HomeScreen() {
                 variant="outline"
               >
                 <View style={styles.quickActionContent}>
-                  <FontAwesome name="users" size={18} color="#007AFF" />
+                  <FontAwesome name="users" size={18} color={themeColors.primary} />
                   <ThemedText style={styles.quickActionText}>Create Group</ThemedText>
+                </View>
+              </Button>
+
+              <Button 
+                onPress={() => router.push('/theme-showcase')}
+                style={styles.quickActionButton}
+                variant="outline"
+              >
+                <View style={styles.quickActionContent}>
+                  <FontAwesome name="paint-brush" size={18} color={themeColors.primary} />
+                  <ThemedText style={styles.quickActionText}>Theme Settings</ThemedText>
                 </View>
               </Button>
 
@@ -201,7 +215,7 @@ export default function HomeScreen() {
                 variant="outline"
               >
                 <View style={styles.quickActionContent}>
-                  <FontAwesome name="refresh" size={18} color="#007AFF" />
+                  <FontAwesome name="refresh" size={18} color={themeColors.primary} />
                   <ThemedText style={styles.quickActionText}>Refresh</ThemedText>
                 </View>
               </Button>

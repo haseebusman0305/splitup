@@ -1,36 +1,48 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleSheet, TouchableOpacity, ViewStyle, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme, useColorSchemeControl } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useRouter } from 'expo-router';
 
-type ThemeToggleProps = {
+interface ThemeToggleProps {
   style?: ViewStyle;
-};
+}
 
 export function ThemeToggle({ style }: ThemeToggleProps) {
-  const colorScheme = useColorScheme();
-  const { toggleColorScheme } = useColorSchemeControl();
+  const { cycleTheme } = useTheme();
+  const themeColors = useColorScheme();
+  const router = useRouter();
 
   return (
-    <TouchableOpacity
-      onPress={toggleColorScheme}
-      style={[styles.container, style]}
-      activeOpacity={0.7}
+    <TouchableOpacity 
+      style={[styles.container, { backgroundColor: themeColors.primary }, style]} 
+      onPress={cycleTheme}
+      onLongPress={() => router.push('/theme-showcase')}
+      delayLongPress={500}
     >
-      <Ionicons
-        name={colorScheme === 'dark' ? 'sunny' : 'moon'}
-        size={24}
-        color={colorScheme === 'dark' ? Colors.dark.text : Colors.light.text}
-      />
+      <View style={styles.iconContainer}>
+        <Ionicons name="color-palette" size={18} color="#FFF" />
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.05)', // subtle background
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });

@@ -16,8 +16,8 @@ export function StyledText({
   children, 
   ...props 
 }: StyledTextProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const theme = useColorScheme();
+  const themeColors = Colors[theme];
 
   const getFontFamily = () => {
     if (bold) return 'Poppins-Bold';
@@ -30,7 +30,7 @@ export function StyledText({
     <Text 
       style={[
         styles.text, 
-        { color: isDark ? Colors.dark.text : Colors.light.text },
+        { color: themeColors.text },
         { fontFamily: getFontFamily() },
         style
       ]} 
@@ -45,4 +45,4 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
   },
-}); 
+});

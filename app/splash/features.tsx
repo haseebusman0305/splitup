@@ -31,8 +31,7 @@ const features = [
 
 export default function FeaturesScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const themeColors = useColorScheme();
   const { setHasCompletedOnboarding } = useOnboarding();
 
   const handleGetStarted = async () => {
@@ -65,7 +64,7 @@ export default function FeaturesScreen() {
         <MaterialIcons 
           name="arrow-forward-ios" 
           size={24} 
-          color={isDark ? Colors.dark.primary : Colors.light.primary} 
+          color={themeColors.primary} 
         />
       </Pressable>
     </ThemedView>

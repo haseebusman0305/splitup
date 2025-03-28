@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/ui/Button';
@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { getUserGroups, Group } from '@/services/firebaseService';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +16,7 @@ export default function GroupsScreen() {
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const themeColors = useColorScheme();
 
   useEffect(() => {
     if (user?.uid) {
@@ -46,6 +49,7 @@ export default function GroupsScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <ThemeToggle style={styles.themeToggle} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <ThemedText type="title">Your Groups</ThemedText>
@@ -55,11 +59,11 @@ export default function GroupsScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.card}>
+          <View style={[styles.card, { borderColor: themeColors.border }]}>
             <ThemedText type="defaultSemiBold">Active Groups</ThemedText>
             
             {loading ? (
-              <ThemedText style={styles.placeholder}>Loading groups...</ThemedText>
+              <ActivityIndicator style={styles.loader} color={themeColors.primary} />
             ) : groups.length > 0 ? (
               groups.map((group) => (
                 <Button 
@@ -113,7 +117,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
     gap: 12,
   },
   placeholder: {
@@ -125,5 +128,14 @@ const styles = StyleSheet.create({
   },
   groupButton: {
     marginVertical: 4,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  themeToggle: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
   },
 });

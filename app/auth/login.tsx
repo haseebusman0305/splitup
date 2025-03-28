@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "expo-router"
+import { useColorScheme } from "@/hooks/useColorScheme"
 
 const { width } = Dimensions.get("window")
 
@@ -28,6 +29,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const { signIn, googleSignIn, user, signOut } = useAuth()
   const router = useRouter()
+  const themeColors = useColorScheme()
 
   const handleLogin = async () => {
     try {
@@ -82,7 +84,7 @@ export default function LoginScreen() {
                     style={styles.profileImage} 
                   />
                 ) : (
-                  <View style={[styles.profileImage, styles.profilePlaceholder]}>
+                  <View style={[styles.profileImage, styles.profilePlaceholder, { backgroundColor: themeColors.secondary }]}>
                     <ThemedText style={styles.profilePlaceholderText}>
                       {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
                     </ThemedText>
@@ -96,14 +98,13 @@ export default function LoginScreen() {
                 </ThemedText>
                 
                 {user.firestoreData && (
-                  <View style={styles.firestoreDataContainer}>
+                  <View style={[styles.firestoreDataContainer, { backgroundColor: themeColors.secondary + '33' }]}>
                     <ThemedText style={styles.firestoreDataTitle} bold>
                       Account Information
                     </ThemedText>
                     <ThemedText style={styles.firestoreDataText}>
                       Groups: {user.firestoreData.groups?.length || 0}
                     </ThemedText>
-                    {/* Additional Firestore data can be displayed here */}
                   </View>
                 )}
                 
